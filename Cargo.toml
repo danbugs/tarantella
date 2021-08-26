@@ -2,6 +2,11 @@
 name = "tarantella"
 version = "0.1.0"
 edition = "2018"
+authors = ["Dan Chiarlone"]
+description = "Tarantella is an **incoming** package manager for WASM modules meant to be dynamically linked!"
+readme = "README.md"
+repository = "https://github.com/danbugs/tarantella"
+license = "AGPL-3.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
