@@ -1,6 +1,4 @@
 use exitfailure::ExitFailure;
-use failure::Context;
-use std::process::Command;
 use structopt::StructOpt;
 
 pub mod add;
@@ -13,7 +11,6 @@ use tapm::{Tapm, TapmSubcommands};
 
 fn main() -> Result<(), ExitFailure> {
     let opt = Tapm::from_args();
-    check_for_emcc()?;
 
     match opt.sub_command {
         TapmSubcommands::New {
@@ -26,13 +23,4 @@ fn main() -> Result<(), ExitFailure> {
         TapmSubcommands::Build {} => build::build()?,
     };
     Ok(())
-}
-
-fn check_for_emcc() -> Result<(), Context<String>> {
-    match Command::new("emcc -v").spawn() {
-        Ok(_) => Ok(()),
-        Err(_) => {
-            return Err(Context::from("Emscripten is not installed in your system. To install it, visit: https://emscripten.org/docs/getting_started/downloads.html".to_string()));
-        }
-    }
 }

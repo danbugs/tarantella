@@ -21,7 +21,7 @@ void print_hello() {
 }
 
 int main() {
-    print_hello()
+    print_hello();
 }";
 
 pub const MAKEFILE_MM : &str = "P=<app_name>
@@ -30,7 +30,7 @@ EMCC=emcc
 EMCC_CFLAGS=-s MAIN_MODULE=1
 
 $(P): $(OBJECTS)
-    $(EMCC) $(EMCC_CFLAGS) src/$(P).c
+\t$(EMCC) $(EMCC_CFLAGS) src/main.c
 ";
 
 pub const MAKEFILE_SM: &str = "P=<app_name>
@@ -40,5 +40,5 @@ EMCC_CFLAGS=-s SIDE_MODULE=2
 BUILDDIR=<app_name>_latest
 
 $(P): $(OBJECTS)
-    $(EMCC) $(EMCC_CFLAGS) src/$(P).c -o $(BUILDDIR)/$(P).wasm
+\t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).wasm
 ";
