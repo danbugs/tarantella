@@ -8,12 +8,12 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
     if Path::new(&app_name).exists() {
         return Err(Context::from(format!("folder {} already exists", app_name)));
     } else {
-        make_default_folder(&app_name);
-        make_default_folder(&format!("{}/src", app_name));
-        make_default_folder(&format!("{}/dependencies", app_name));
+        make_default_folder(&app_name)?;
+        make_default_folder(&format!("{}/src", app_name))?;
+        make_default_folder(&format!("{}/dependencies", app_name))?;
         if side_module {
-            make_default_folder(&format!("{}/{}_latest", app_name, app_name));
-            make_default_folder(&format!("{}/releases", app_name));
+            make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
+            make_default_folder(&format!("{}/releases", app_name))?;
         }
 
         make_default_file(
