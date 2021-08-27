@@ -1,4 +1,4 @@
-use crate::constants::{MAIN_C, MAKEFILE_MM, MAKEFILE_SM, TARANTELLA_MM_TOML, TARANTELLA_SM_TOML};
+use crate::constants::{INDEX_HTML, MAIN_C, MAKEFILE_MM, MAKEFILE_SM, TARANTELLA_MM_TOML, TARANTELLA_SM_TOML};
 use failure::{Context, ResultExt};
 use std::fs::{self, File};
 use std::io::prelude::*;
@@ -14,6 +14,9 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
         if side_module {
             make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
             make_default_folder(&format!("{}/releases", app_name))?;
+        } else {
+            make_default_folder(&format!("{}/build", app_name))?;
+            make_default_file("index.html", INDEX_HTML, &app_name)?;
         }
 
         make_default_file(
