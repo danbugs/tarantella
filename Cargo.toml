@@ -11,3 +11,10 @@ license = "AGPL-3.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+structopt = "0.3.22"
+failure = "0.1.8"
+exitfailure = "0.5.1"
+
+[[bin]]
+name = "tapm"
+path ="src/main.rs"
