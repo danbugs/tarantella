@@ -6,6 +6,7 @@ pub mod build;
 pub mod constants;
 pub mod new;
 pub mod tapm;
+pub mod utils;
 
 use tapm::{Tapm, TapmSubcommands};
 
