@@ -1,0 +1,7 @@
+[package]
+name = "dancing_web"
+version = "0.1.0"
+module_type = "main_module"
+build_dir = "build"
+
+[dependencies]
