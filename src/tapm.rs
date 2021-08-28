@@ -19,12 +19,13 @@ pub enum TapmSubcommands {
         side_module: bool,
     },
 
-    /// Add a new dependency to your wasm app (e.g., `--add "dcw-0.1.0"`)
-    Add { dependency_name_and_version: String },
+    /// Start an HTTP server to serve your main module
+    Run {
+        /// Specify a port (default = 4000)
+        #[structopt(short, long, default_value = "4000")]
+        port: i32,
+    },
 
-    /// Build your wasmp app
+    /// Build your wasm app
     Build {},
-
-    // /// Publish your side module to Tarantella
-    // Publish {},
 }
