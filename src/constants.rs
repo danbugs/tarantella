@@ -51,6 +51,7 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
     <title>Tarantella App</title>
   </head>
   <body>
+    <h1>Hello, Tarantella 💃🕷</h1>
     <script async type=\"text/javascript\" src=\"build/a.out.js\"></script>
   </body>
 </html>";

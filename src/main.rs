@@ -1,10 +1,10 @@
 use exitfailure::ExitFailure;
 use structopt::StructOpt;
 
-pub mod add;
 pub mod build;
 pub mod constants;
 pub mod new;
+pub mod run;
 pub mod tapm;
 pub mod utils;
 
@@ -18,9 +18,7 @@ fn main() -> Result<(), ExitFailure> {
             app_name,
             side_module,
         } => new::new(app_name, side_module)?,
-        TapmSubcommands::Add {
-            dependency_name_and_version,
-        } => add::add(dependency_name_and_version)?,
+        TapmSubcommands::Run {port} => run::run(port)?,
         TapmSubcommands::Build {} => build::build()?,
     };
     Ok(())
