@@ -21,7 +21,7 @@ pub enum TapmSubcommands {
 
     /// Start an HTTP server to serve your main module
     Run {
-        /// Specify a port (default = 4000)
+        /// Specify a port
         #[structopt(short, long, default_value = "4000")]
         port: i32,
     },
