@@ -9,7 +9,7 @@ use std::path::Path;
 pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
     utils::check_for_command(
         "git",
-        "`tapm` depends on git. To install it, see: https://git-scm.com/downloads",
+        "tapm depends on git. To install it, see: https://git-scm.com/downloads",
     )?;
     if Path::new(&app_name).exists() {
         return Err(Context::from(format!("folder {} already exists", app_name)));

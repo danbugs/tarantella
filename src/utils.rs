@@ -25,7 +25,7 @@ pub fn toml_to_struct(toml_file_name: &str) -> Result<TarantellaToml, Context<St
 
 pub fn update_toml(toml_file_name: &str, toml: &TarantellaToml) -> Result<(), Context<String>> {
     fs::write(toml_file_name, toml::to_string(&toml).unwrap()).context(
-        "tapm failed updating Tarantella.toml"
+        "Failed to update Tarantella.toml"
             .to_string(),
     )?;
     Ok(())
@@ -80,7 +80,7 @@ pub fn spawn_command(command: &str, err_msg: &str) -> Result<Child, Context<Stri
 }
 
 pub fn make_default_folder(folder_path: &String) -> Result<(), Context<String>> {
-    fs::create_dir(folder_path).context(format!("failed while creating {} folder", folder_path))?;
+    fs::create_dir(folder_path).context(format!("Failed while creating {} folder", folder_path))?;
     Ok(())
 }
 
@@ -90,12 +90,12 @@ pub fn make_default_file(
     app_name: &String,
 ) -> Result<(), Context<String>> {
     let file = File::create(file_path)
-        .context(format!("failed while creating {} file", file_path));
+        .context(format!("Failed while creating {} file", file_path));
     let content = content.to_string().replace("<app_name>", &app_name);
     file.unwrap()
         .write_all(content.as_bytes())
         .context(format!(
-            "failed while writing contents to {} file",
+            "Failed while writing contents to {} file",
             file_path
         ))?;
 

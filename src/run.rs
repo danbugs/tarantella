@@ -8,7 +8,7 @@ pub fn run(port: i32) -> Result<(), Context<String>> {
     if module_type.eq("main_module") {
         utils::check_for_command(
             "basic-http-server",
-            "`tapm` depends on basic-http-server. To install it, run: `cargo install basic-http-server`",
+            "tapm depends on basic-http-server. To install it, run: `cargo install basic-http-server`",
         )?;
         let err_msg = "tapm run failed".to_string();
         let mut child = if cfg!(target_os = "windows") {
@@ -27,7 +27,7 @@ pub fn run(port: i32) -> Result<(), Context<String>> {
 
     } else {
         return Err(Context::from(
-            "`tapm run` is a command meant solely for main modules.".to_string(),
+            "tapm run is a command meant solely for main modules.".to_string(),
         ));
     }
 
