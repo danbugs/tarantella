@@ -1,5 +1,6 @@
 use exitfailure::ExitFailure;
 use structopt::StructOpt;
+#[macro_use] extern crate log;
 
 pub mod build;
 pub mod constants;

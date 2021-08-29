@@ -1,5 +1,4 @@
-pub const TARANTELLA_MM_TOML : &str = "# As Tarantella isn't 100% stable as of now, please refrain from editing any fields other than version
-[package]
+pub const TARANTELLA_MM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\"
 module_type = \"main_module\"
@@ -8,8 +7,7 @@ releases_repo = \"\"
 
 [dependencies]";
 
-pub const TARANTELLA_SM_TOML : &str = "# As Tarantella isn't 100% stable as of now, please refrain from editing any fields other than version
-[package]
+pub const TARANTELLA_SM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\"
 module_type = \"side_module\"

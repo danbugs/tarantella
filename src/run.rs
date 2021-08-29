@@ -4,7 +4,7 @@ use crate::utils;
 use failure::{Context, ResultExt};
 
 pub fn run(port: i32) -> Result<(), Context<String>> {
-    let module_type = utils::toml_to_struct("Tarantella.toml").unwrap().package.module_type;
+    let module_type = utils::check_for_toml_field("module_type")?;
     if module_type.eq("main_module") {
         utils::check_for_command(
             "basic-http-server",
