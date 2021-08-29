@@ -1,6 +1,6 @@
 use failure::{Context, ResultExt};
 use serde_derive::{Deserialize};
-use std::{fs, path::Path, process::Command};
+use std::{fs, path::Path, process::{Child, Command, Output}};
 
 #[derive(Deserialize)]
 pub struct TarantellaToml {
@@ -13,6 +13,7 @@ pub struct Package {
     pub version: String,
     pub module_type: String,
     pub build_dir: String,
+    pub releases_repo: String,
 }
 
 pub fn toml_to_struct(toml_file_name: &str) -> Result<TarantellaToml, Context<String>>{
@@ -36,4 +37,35 @@ pub fn check_for_path(path: &str, err_msg: &str) -> Result<(), Context<String>> 
     }
 
     Ok(())
+}
+
+pub fn run_command(command: &str, err_msg: &str) -> Result<Output, Context<String>> {
+    let output = if cfg!(target_os = "windows") {
+        Command::new("powershell")
+            .args(&["/C", command])
+            .output()
+            .context(err_msg.to_string())?
+    } else {
+        Command::new("sh")
+            .args(&["-c", command])
+            .output()
+            .context(err_msg.to_string())?
+    };
+    Ok(output)
+}
+
+pub fn spawn_command(command: &str, err_msg: &str) -> Result<Child, Context<String>> {
+    let child : Child = if cfg!(target_os = "windows") {
+        Command::new("powershell")
+            .args(&["/C", command])
+            .spawn()
+            .context(err_msg.to_string())?
+    } else {
+        Command::new("sh")
+            .args(&["-c", command])
+            .spawn()
+            .context(err_msg.to_string())?
+    };
+
+    Ok(child)
 }

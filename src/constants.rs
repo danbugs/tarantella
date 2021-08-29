@@ -11,6 +11,7 @@ name = \"<app_name>\"
 version = \"0.1.0\"
 module_type = \"side_module\"
 build_dir = \"<app_name>_latest\"
+releases_repo = \"\"
 
 [dependencies]";
 

@@ -28,4 +28,13 @@ pub enum TapmSubcommands {
 
     /// Build your wasm app
     Build {},
+
+    /// Login to GitHub to publish your wasm app with Tarantella
+    Login {},
+
+    /// Register to GitHub to publish your wasm app with Tarantella
+    Register {},
+
+    /// Publish your wasm app with Tarantella
+    Publish {}, 
 }

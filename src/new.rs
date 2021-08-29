@@ -1,10 +1,12 @@
 use crate::constants::{INDEX_HTML, MAIN_C, MAKEFILE_MM, MAKEFILE_SM, TARANTELLA_MM_TOML, TARANTELLA_SM_TOML};
+use crate::utils;
 use failure::{Context, ResultExt};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::path::Path;
 
 pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
+    utils::check_for_command("git", "`tapm` depends on git. To install it, see: https://git-scm.com/downloads")?;
     if Path::new(&app_name).exists() {
         return Err(Context::from(format!("folder {} already exists", app_name)));
     } else {
@@ -12,6 +14,7 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
         make_default_folder(&format!("{}/src", app_name))?;
         make_default_folder(&format!("{}/dependencies", app_name))?;
         if side_module {
+            utils::run_command("git init", "tapm failed to initialize a git repository")?;
             make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
             make_default_folder(&format!("{}/releases", app_name))?;
         } else {
