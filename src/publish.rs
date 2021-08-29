@@ -48,7 +48,7 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
     Ok(str::from_utf8(&output.stdout).unwrap().to_string())
 }
 
-fn create_release(app_name: &str, url: &str) -> Result<(), Context<String>> {
+fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
     let mut toml = utils::toml_to_struct("Tarantella.toml").unwrap();
     toml.package.releases_repo = url.trim().to_string();
     utils::update_toml("Tarantella.toml", &toml)?;
@@ -59,7 +59,7 @@ fn create_release(app_name: &str, url: &str) -> Result<(), Context<String>> {
     zip_create_from_directory(&archive_file, &source_dir).context("tapm publish failed at creating zip file for release".to_string())?;
 
     let mut child = utils::spawn_command(
-        &format!("cd ../{}_releases && gh release create {} ../{}/releases/{}-{}.zip", app_name, version, app_name, app_name, version),
+        &format!("{}gh release create {} ../{}/releases/{}-{}.zip", extra_command, version, app_name, app_name, version),
         "tapm publish failed to add a README to releases git repo",
     )?;
 
@@ -102,14 +102,14 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
 
                 if privacy_status.is_success() {
                     // ^^^ repo is public
-                    create_release(app_name, url)?;
+                    create_release(app_name, url, "")?;
                     return Ok(());
                 }
             }
         }
     }
     let url = create_public_repo(&app_name)?;
-    create_release(app_name, &url)?;
+    create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
     return Ok(());
 }
 
