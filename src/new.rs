@@ -42,7 +42,7 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
             },
             &app_name,
         )?;
-        utils::make_default_file(&format!("{}/src/mainc.", app_name), MAIN_C, &app_name)?;
+        utils::make_default_file(&format!("{}/src/main.c", app_name), MAIN_C, &app_name)?;
         utils::make_default_file(
             &format!("{}/Makefile", app_name),
             if side_module {
