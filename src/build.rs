@@ -8,5 +8,6 @@ pub fn build() -> Result<(), Context<String>> {
     let build_dir = utils::check_for_toml_field("build_dir")?;
     utils::check_for_path(&build_dir, &format!("{} folder is missing", &build_dir))?;
     utils::run_command("emmake make", "tapm build failed")?;
+    info!("{}", &format!("Created new build at {}", &build_dir));
     Ok(())
 }

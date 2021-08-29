@@ -7,8 +7,10 @@ use crate::{constants::README, utils};
 pub async fn publish() -> Result<(), Context<String>> {
     let releases_repo = utils::check_for_toml_field("releases_repo")?;
     if releases_repo.is_empty() {
+        info!("Initiating first release...");
         first_release(&utils::check_for_toml_field("name")?).await?
     } else {
+        info!("Creating a new release...");
         update_release(&releases_repo)?
     }
 
@@ -20,8 +22,16 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
         &format!("cd .. && gh repo create {}_releases --public -y", app_name),
         "tapm publish failed at creating a public repo for releases",
     )?;
+    info!(
+        "{}",
+        format!("Creating local git repo for releases at ../{}_releases...", app_name)
+    );
 
-    utils::make_default_file(&format!("../{}_releases/README.md", app_name), README, &app_name.to_string())?;
+    utils::make_default_file(
+        &format!("../{}_releases/README.md", app_name),
+        README,
+        &app_name.to_string(),
+    )?;
 
     utils::run_command(
         &format!("cd ../{}_releases && git branch -M main", app_name),
@@ -34,7 +44,10 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
     )?;
 
     utils::run_command(
-        &format!("cd ../{}_releases && git commit --allow-empty-message -m ''", app_name),
+        &format!(
+            "cd ../{}_releases && git commit --allow-empty-message -m ''",
+            app_name
+        ),
         "tapm publish failed to commit changes to the releases git repo",
     )?;
 
@@ -43,22 +56,29 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
         "tapm publish failed to push changes to the remote origin of the releases git repo",
     )?;
 
+    let return_url = str::from_utf8(&output.stdout).unwrap().trim().to_string();
+    info!("{}", format!("Created remote public git repo at {}", return_url));
 
-    Ok(str::from_utf8(&output.stdout).unwrap().to_string())
+    Ok(return_url)
 }
 
 fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
     let mut toml = utils::toml_to_struct("Tarantella.toml")?;
-    toml.package.releases_repo = Some(url.trim().to_string());
+    toml.package.releases_repo = Some(url.to_string());
     utils::update_toml("Tarantella.toml", &toml)?;
 
     let version = utils::check_for_toml_field("version")?;
     let archive_file: PathBuf = PathBuf::from(format!("releases/{}-{}.zip", app_name, version));
-    let source_dir: PathBuf = PathBuf::from(format!("{}", utils::check_for_toml_field("build_dir")?));
-    zip_create_from_directory(&archive_file, &source_dir).context("tapm publish failed at creating a zip file for the release".to_string())?;
+    let source_dir: PathBuf =
+        PathBuf::from(format!("{}", utils::check_for_toml_field("build_dir")?));
+    zip_create_from_directory(&archive_file, &source_dir)
+        .context("tapm publish failed at creating a zip file for the release".to_string())?;
 
     let mut child = utils::spawn_command(
-        &format!("{}gh release create {} ../{}/releases/{}-{}.zip", extra_command, version, app_name, app_name, version),
+        &format!(
+            "{}gh release create {} ../{}/releases/{}-{}.zip",
+            extra_command, version, app_name, app_name, version
+        ),
         "tapm publish failed to add a README to the releases git repo",
     )?;
 
@@ -104,13 +124,29 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
                     // ^^^ repo is public
                     create_release(app_name, url, "")?;
                     return Ok(());
+                } else {
+                    info!("Source code is private...");
                 }
+            } else {
+                info!("Current repo is not hosted on GitHub...");
             }
+        } else {
+            info!("Current repo does not contain a remote origin...");
         }
+
+        // code escapes here if:
+        // - there was no remote origin found in current git repo.
+        // - the remote origin is not hosted on GitHub.
+        // - the remote origin repo is not public.
+
+        let url = create_public_repo(&app_name)?;
+        create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
+        return Ok(());
+    } else {
+        return Err(Context::from(
+            "You must be logged in to use tapm publish — run: tapm login".to_string(),
+        ));
     }
-    let url = create_public_repo(&app_name)?;
-    create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
-    return Ok(());
 }
 
 fn update_release(_url: &str) -> Result<(), Context<String>> {
