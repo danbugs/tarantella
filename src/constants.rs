@@ -1,12 +1,15 @@
-pub const TARANTELLA_MM_TOML : &str = "[package]
+pub const TARANTELLA_MM_TOML : &str = "# As Tarantella isn't 100% stable as of now, please refrain from editing any fields other than version
+[package]
 name = \"<app_name>\"
 version = \"0.1.0\"
 module_type = \"main_module\"
-build_dir = \"build\"
+build_dir = \"<app_name>_latest\"
+releases_repo = \"\"
 
 [dependencies]";
 
-pub const TARANTELLA_SM_TOML : &str = "[package]
+pub const TARANTELLA_SM_TOML : &str = "# As Tarantella isn't 100% stable as of now, please refrain from editing any fields other than version
+[package]
 name = \"<app_name>\"
 version = \"0.1.0\"
 module_type = \"side_module\"
@@ -56,3 +59,12 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
     <script async type=\"text/javascript\" src=\"build/a.out.js\"></script>
   </body>
 </html>";
+
+pub const GIT_IGNORE: &str = "<app_name>_latest/
+releases/
+dependencies/
+";
+
+pub const README: &str = "# Welcome to <app_name>! 💃🕷
+This is an app made with the [Tarantella Package Manager](https://github.com/danbugs/tarantella)
+";
