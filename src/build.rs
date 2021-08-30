@@ -10,7 +10,7 @@ pub fn build() -> Result<(), Context<String>> {
     utils::check_for_path(&build_dir, &format!("{} folder is missing", &build_dir))?;
     let output = utils::run_command("emmake make", "tapm build failed")?;
     let stderr = str::from_utf8(&output.stderr).unwrap();
-    if stderr.contains("emcc") {
+    if stderr.contains("emcc") { // we only care about an error from `emcc` — make prints to stderr even on success
         return Err(Context::from(stderr.to_string()));
     }
     info!("{}", &format!("Created new build at {}/", &build_dir));

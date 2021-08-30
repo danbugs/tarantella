@@ -40,11 +40,11 @@ $(P): $(OBJECTS)
 pub const MAKEFILE_SM: &str = "P=<app_name>
 OBJECTS=src/main.c
 EMCC=emcc
-EMCC_CFLAGS=-s SIDE_MODULE=2
+EMCC_CFLAGS=-s SIDE_MODULE=2 -c
 BUILDDIR=<app_name>_latest
 
 $(P): $(OBJECTS)
-\t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).wasm";
+\t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).o";
 
 pub const INDEX_HTML: &str = "<html lang=\"en\">
   <head>

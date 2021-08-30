@@ -1,7 +1,7 @@
 use failure::{Context, ResultExt};
+use online::check;
 use std::{path::PathBuf, str};
 use zip_extensions::*;
-use online::check;
 
 use crate::{constants::README, utils};
 
@@ -10,12 +10,16 @@ pub async fn publish() -> Result<(), Context<String>> {
     let app_name = utils::check_for_toml_field("name")?;
     let build_dir = utils::check_for_toml_field("build_dir")?;
     if !check(None).await.is_ok() {
-        return Err(Context::from("You need an internet connectivity to run tapm publish".to_string()))
+        return Err(Context::from(
+            "You need an internet connectivity to run tapm publish".to_string(),
+        ));
     }
-    utils::check_for_path(
-        &format!("{}/{}.wasm", build_dir, app_name),
-        &format!("{}/{}.wasm not found", build_dir, app_name),
-    )?;
+
+    if PathBuf::from(&build_dir).read_dir().unwrap().next().is_none() {
+        return Err(Context::from(
+            format!("There's nothing to build in {}/", build_dir),
+        ));
+    }
 
     if releases_repo.is_empty() {
         info!("Initiating first release...");
@@ -75,8 +79,13 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
         "{}",
         format!("Created remote public git repo at {}", return_url)
     );
-    warn!("{}", format!("If you CTRL+C this process now, you must also manually delete the git repo at {}", return_url));
-
+    warn!(
+        "{}",
+        format!(
+            "If you CTRL+C this process now, you must also manually delete the git repo at {}",
+            return_url
+        )
+    );
 
     Ok(return_url)
 }
@@ -86,7 +95,7 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
     let mut toml = utils::toml_to_struct("Tarantella.toml")?;
     toml.package.releases_repo = Some(url.to_string());
     utils::update_toml("Tarantella.toml", &toml)?;
-    
+
     warn!("If you CTRL+C this process now, you must also manually set the release_repo field from Tarantella.toml to \"\".");
 
     let version = utils::check_for_toml_field("version")?;
@@ -96,7 +105,13 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
     zip_create_from_directory(&archive_file, &source_dir)
         .context("tapm publish failed at creating a zip file for the release".to_string())?;
 
-    info!("{}", format!("Created new release at releases/{}-{}.zip", app_name, version));
+    info!(
+        "{}",
+        format!(
+            "Created new release at releases/{}-{}.zip",
+            app_name, version
+        )
+    );
     let path_fragment = if extra_command.is_empty() {
         "".to_string()
     } else {
@@ -110,7 +125,7 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
         ),
         "tapm publish failed to add a README to the releases git repo",
     )?;
-    
+
     child.wait().unwrap();
 
     Ok(())
@@ -143,7 +158,7 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
 
 async fn update_release() -> Result<(), Context<String>> {
     let app_name = utils::check_for_toml_field("name").unwrap();
-    
+
     let external_repo = get_repo_url().await.unwrap();
     if external_repo.is_empty() {
         utils::check_for_path(
@@ -201,12 +216,7 @@ async fn get_repo_url() -> Result<String, Context<String>> {
         let stdout = str::from_utf8(&origin.stdout).unwrap();
         if stdout.contains("github.com") {
             // ^^^ git repo is hosted on GitHub
-            let url = utils::find_str_between(
-                stdout,
-                "https://github.com/",
-                ".git",
-                0,
-            )?; // hacky way to get current repo's url
+            let url = utils::find_str_between(stdout, "https://github.com/", ".git", 0)?; // hacky way to get current repo's url
 
             let privacy_status = reqwest::get(&url).await.unwrap().status();
 

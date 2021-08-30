@@ -41,19 +41,24 @@ pub fn update_toml(toml_file_name: &str, toml: &TarantellaToml) -> Result<(), Co
     Ok(())
 }
 
-pub fn check_for_command(command: &str, err_msg: &str) -> Result<(), Context<String>> {
-    if cfg!(target_os = "windows") {
+pub fn check_for_command(command: &str, err_msg: &str) -> Result<Output, Context<String>> {
+    let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args(&["/C", command, "--version"])
             .output()
-            .context(err_msg.to_string())?;
+            .unwrap()
     } else {
         Command::new("sh")
             .args(&["-c", command, "--version"])
             .output()
-            .context(err_msg.to_string())?;
+            .unwrap()
+    };
+
+    if str::from_utf8(&output.stdout).unwrap().is_empty() {
+        return Err(Context::from(err_msg.to_string()));
     }
-    Ok(())
+
+    Ok(output)
 }
 
 pub fn check_for_path(path: &str, err_msg: &str) -> Result<(), Context<String>> {

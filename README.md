@@ -2,6 +2,14 @@
 
 Tarantella is an **incoming** modern package manager for C/C++ WASM apps (main modules) and WASM libraries (side modules) meant to be dynamically linked!
 
+## Requirements
+
+- [basic-http-server](https://crates.io/crates/basic-http-server).
+- [GitHub CLI](https://github.com/cli/cli#installation).
+- [Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
+
+If you note weird behaviours with `tapm`, the version of one or more of the requirements might be outdated. I've created and used `tapm` with the following versions: ` emcc v2.0.29`, `basic-http-server v0.8.1`, and `gh v2.0.0`.
+
 ## Why use Tarantella?
 
 Tarantella makes it easy to start, build, test, and distribute WASM apps and libraries by serving as a wrapper around several fantastic tools.
@@ -30,7 +38,7 @@ To publish your app, run `tapm login` to login to GitHub, and `tapm publish` to 
 
 ## Why not use [WAPM](https://wapm.io/)?
 
-As of now, [WAPM](https://wapm.io/) only allows distributing `.wasm` modules. If your WASM app includes something like a JS library that goes alongside it, you are left having to distribute that separetly — that sort of thing can really add complexity to, for example, setting up a WASM app that has several dynamically linked libraries.
+As of now, [WAPM](https://wapm.io/) only allows distributing `.wasm` modules. If your WASM app includes something like a JS library that goes alongside it, or you've compiled your dynamic library to a `.o`  file, you are left having to distribute that separetly — that sort of thing can really add complexity to, for example, setting up a WASM app that has several dynamically linked libraries.
 
 ## Install
 
