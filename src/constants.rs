@@ -2,7 +2,7 @@ pub const TARANTELLA_MM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\" # format: major.minor.patch
 module_type = \"main_module\" # main_module || side_module
-build_dir = \"<app_name>_latest\" # when modifying this field, change BUILD_DIR in the Makefile too
+build_dir = \"build\" # when modifying this field, change BUILD_DIR in the Makefile too
 releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 
 [dependencies]";
@@ -11,7 +11,7 @@ pub const TARANTELLA_SM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\"  # format: major.minor.patch
 module_type = \"side_module\" # main_module || side_module
-build_dir = \"<app_name>_latest\" # when modifying this field, change BUILD_DIR in the Makefile too
+build_dir = \"build\" # when modifying this field, change BUILD_DIR in the Makefile too
 releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 
 [dependencies]";
@@ -32,7 +32,7 @@ pub const MAKEFILE_MM : &str = "P=<app_name>
 OBJECTS=src/main.c
 EMCC=emcc
 EMCC_CFLAGS=-s MAIN_MODULE=1
-BUILDDIR=<app_name>_latest
+BUILDDIR=build
 
 $(P): $(OBJECTS)
 \t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).js";
@@ -41,7 +41,7 @@ pub const MAKEFILE_SM: &str = "P=<app_name>
 OBJECTS=src/main.c
 EMCC=emcc
 EMCC_CFLAGS=-s SIDE_MODULE=2 -c
-BUILDDIR=<app_name>_latest
+BUILDDIR=build
 
 $(P): $(OBJECTS)
 \t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).o";
@@ -54,11 +54,11 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
   </head>
   <body>
     <h1>Hello, Tarantella 💃🕷</h1>
-    <script async type=\"text/javascript\" src=\"<app_name>_latest/<app_name>.js\"></script>
+    <script async type=\"text/javascript\" src=\"build/<app_name>.js\"></script>
   </body>
 </html>";
 
-pub const GIT_IGNORE: &str = "<app_name>_latest/
+pub const GIT_IGNORE: &str = "build/
 releases/
 dependencies/
 ";

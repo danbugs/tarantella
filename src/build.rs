@@ -1,6 +1,8 @@
 use crate::utils;
 use failure::Context;
+use failure::ResultExt;
 use std::str;
+use std::fs;
 
 pub fn build() -> Result<(), Context<String>> {
     utils::check_for_command("emmake make", "tapm depends on emmake — make sure you have got Emscripten installed. For instructions, visit: https://emscripten.org/docs/getting_started/downloads.html")?;
@@ -13,6 +15,7 @@ pub fn build() -> Result<(), Context<String>> {
     if stderr.contains("emcc") { // we only care about an error from `emcc` — make prints to stderr even on success
         return Err(Context::from(stderr.to_string()));
     }
+    fs::copy("Tarantella.toml", "build/Tarantella.toml").context("tapm build failed to copy Tarantella.toml to build directory".to_string())?;
     info!("{}", &format!("Created new build at {}/", &build_dir));
     Ok(())
 }

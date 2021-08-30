@@ -22,7 +22,7 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
             &format!("git init {}/", app_name),
             "tapm failed to initialize a git repository",
         )?;
-        utils::make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
+        utils::make_default_folder(&format!("{}/build", app_name))?;
         if !side_module {
             utils::make_default_file(&format!("{}/index.html", app_name), INDEX_HTML, &app_name)?;
         }
