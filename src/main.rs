@@ -1,6 +1,7 @@
 use exitfailure::ExitFailure;
 use structopt::StructOpt;
 #[macro_use] extern crate log;
+use env_logger::{Builder, Env};
 
 pub mod build;
 pub mod constants;
@@ -17,6 +18,11 @@ use tapm::{Tapm, TapmSubcommands};
 #[tokio::main]
 async fn main() -> Result<(), ExitFailure> {
     let opt = Tapm::from_args();
+    let env = Env::new().default_filter_or("tapm=info");
+    Builder::from_env(env)
+        .default_format_module_path(false)
+        .default_format_timestamp(false)
+        .init();
 
     match opt.sub_command {
         TapmSubcommands::New {

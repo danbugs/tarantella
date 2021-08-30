@@ -11,20 +11,28 @@ pub async fn publish() -> Result<(), Context<String>> {
         first_release(&utils::check_for_toml_field("name")?).await?
     } else {
         info!("Creating a new release...");
-        update_release(&releases_repo)?
+        update_release(&releases_repo).await?
     }
 
     Ok(())
 }
 
 fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
+    let build_dir = utils::check_for_toml_field("build_dir")?;
+    utils::check_for_path(
+        &format!("{}/{}.wasm", build_dir, app_name),
+        &format!("{}/{}.wasm not found", build_dir, app_name),
+    )?;
     let output = utils::run_command(
         &format!("cd .. && gh repo create {}_releases --public -y", app_name),
         "tapm publish failed at creating a public repo for releases",
     )?;
     info!(
         "{}",
-        format!("Creating local git repo for releases at ../{}_releases...", app_name)
+        format!(
+            "Creating local git repo for releases at ../{}_releases/...",
+            app_name
+        )
     );
 
     utils::make_default_file(
@@ -57,12 +65,16 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
     )?;
 
     let return_url = str::from_utf8(&output.stdout).unwrap().trim().to_string();
-    info!("{}", format!("Created remote public git repo at {}", return_url));
+    info!(
+        "{}",
+        format!("Created remote public git repo at {}", return_url)
+    );
 
     Ok(return_url)
 }
 
 fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
+    info!("Specify release details below:");
     let mut toml = utils::toml_to_struct("Tarantella.toml")?;
     toml.package.releases_repo = Some(url.to_string());
     utils::update_toml("Tarantella.toml", &toml)?;
@@ -74,10 +86,20 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
     zip_create_from_directory(&archive_file, &source_dir)
         .context("tapm publish failed at creating a zip file for the release".to_string())?;
 
+    let path_fragment = if extra_command.is_empty() {
+        "".to_string()
+    } else {
+        format!("../{}/", app_name).to_string()
+    };
+
     let mut child = utils::spawn_command(
         &format!(
-            "{}gh release create {} ../{}/releases/{}-{}.zip",
-            extra_command, version, app_name, app_name, version
+            "{}gh release create {} {}/releases/{}-{}.zip",
+            extra_command,
+            version,
+            path_fragment,
+            app_name,
+            version
         ),
         "tapm publish failed to add a README to the releases git repo",
     )?;
@@ -95,52 +117,15 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
     )?;
     if str::from_utf8(&auth_status.stderr).unwrap().contains("✓") {
         // ^^^ hacky way to check if user is logged in, could be improved
-        let git_err_msg = "tapm depends on the git command — make sure you have got git installed. For instructions, visit: https://git-scm.com/downloads";
-        utils::check_for_command("git", git_err_msg)?;
-        let origin = utils::run_command("git remote show origin", git_err_msg)?;
 
-        if str::from_utf8(&origin.stderr).unwrap().is_empty() {
-            // ^^^ origin exists
-            if str::from_utf8(&origin.stdout)
-                .unwrap()
-                .contains("github.com")
-            {
-                // ^^^ git repo is hosted on GitHub
+        let mut url = get_repo_url().await.unwrap();
 
-                let start_bytes = str::from_utf8(&origin.stdout)
-                    .unwrap()
-                    .find("https://github.com/")
-                    .unwrap_or(0);
-                let end_bytes = str::from_utf8(&origin.stdout)
-                    .unwrap()
-                    .find(".git")
-                    .unwrap_or(str::from_utf8(&origin.stdout).unwrap().len());
-                let url = &str::from_utf8(&origin.stdout).unwrap()[start_bytes..end_bytes];
-                // ^^^ hacky way to get current repo's url
-
-                let privacy_status = reqwest::get(url).await.unwrap().status();
-
-                if privacy_status.is_success() {
-                    // ^^^ repo is public
-                    create_release(app_name, url, "")?;
-                    return Ok(());
-                } else {
-                    info!("Source code is private...");
-                }
-            } else {
-                info!("Current repo is not hosted on GitHub...");
-            }
+        if !url.is_empty() {
+            create_release(app_name, &url, "")?;
         } else {
-            info!("Current repo does not contain a remote origin...");
+            url = create_public_repo(&app_name)?;
+            create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
         }
-
-        // code escapes here if:
-        // - there was no remote origin found in current git repo.
-        // - the remote origin is not hosted on GitHub.
-        // - the remote origin repo is not public.
-
-        let url = create_public_repo(&app_name)?;
-        create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
         return Ok(());
     } else {
         return Err(Context::from(
@@ -149,11 +134,82 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
     }
 }
 
-fn update_release(_url: &str) -> Result<(), Context<String>> {
-    // get latest release version from repo
-    // get version in toml file
+async fn update_release(_url: &str) -> Result<(), Context<String>> {
+    let app_name = utils::check_for_toml_field("name").unwrap();
+    let external_repo = get_repo_url().await.unwrap();
+    if external_repo.is_empty() {
+        utils::check_for_path(
+            &format!("../{}_releases", app_name),
+            &format!("../{}_releases folder is missing", app_name),
+        )?;
+    }
 
-    // compare both versions -> iff same, throw an error
-    // iff different -> call create_release(url)
+    let releases_repo = utils::check_for_toml_field("releases_repo").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
+    let repo_code = &releases_repo
+        [(releases_repo.find("https://github.com/").unwrap_or(0) + "https://github.com/".len())..];
+    let raw_output = utils::run_command(
+        &format!("gh release view --repo {}", repo_code),
+        "tapm publish failed to get information about the previous release",
+    )?;
+    let output = str::from_utf8(&raw_output.stdout).unwrap();
+    let published_version = utils::find_str_between(output, "tag:", "draft:", "tag:".len())
+        .unwrap()
+        .trim()
+        .to_string();
+    let version = utils::check_for_toml_field("version").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
+
+    if version.eq(&published_version) {
+        return Err(Context::from("Tarantella.toml's version is the same as your latest published version —— update it before publishing a new release.".to_string()));
+    } else {
+        create_release(&app_name, &releases_repo, &if external_repo.is_empty() {
+            format!("cd ../{}_releases && ", app_name).to_string()
+        } else {
+            "".to_string()
+        })?;
+    }
+
+    
     Ok(())
+}
+
+// returns false if:
+// - there was no remote origin found in current git repo.
+// - the remote origin is not hosted on GitHub.
+// - the remote origin repo is not public.
+
+async fn get_repo_url() -> Result<String, Context<String>> {
+    let git_err_msg = "tapm depends on the git command — make sure you have got git installed. For instructions, visit: https://git-scm.com/downloads";
+    utils::check_for_command("git", git_err_msg)?;
+    let origin = utils::run_command("git remote show origin", git_err_msg)?;
+
+    if str::from_utf8(&origin.stderr).unwrap().is_empty() {
+        // ^^^ origin exists
+        if str::from_utf8(&origin.stdout)
+            .unwrap()
+            .contains("github.com")
+        {
+            // ^^^ git repo is hosted on GitHub
+            let url = utils::find_str_between(
+                str::from_utf8(&origin.stdout).unwrap(),
+                "https://github.com/",
+                ".git",
+                0,
+            )?; // hacky way to get current repo's url
+
+            let privacy_status = reqwest::get(&url).await.unwrap().status();
+
+            if privacy_status.is_success() {
+                // ^^^ repo is public
+                return Ok(url);
+            } else {
+                info!("Source code is private...");
+            }
+        } else {
+            info!("Current repo is not hosted on GitHub...");
+        }
+    } else {
+        info!("Current repo does not contain a remote origin...");
+    }
+
+    return Ok("".to_string());
 }

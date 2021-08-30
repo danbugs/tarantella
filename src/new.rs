@@ -18,19 +18,13 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
         utils::make_default_folder(&format!("{}/src", app_name))?;
         utils::make_default_folder(&format!("{}/dependencies", app_name))?;
         utils::make_default_folder(&format!("{}/releases", app_name))?;
-        if side_module {
-            utils::run_command(
-                &format!("git init {}/", app_name),
-                "tapm failed to initialize a git repository",
-            )?;
-            utils::make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
-        } else {
-            utils::make_default_folder(&format!("{}/build", app_name))?;
-            utils::make_default_file(
-                &format!("{}/index.html", app_name),
-                INDEX_HTML,
-                &app_name,
-            )?;
+        utils::run_command(
+            &format!("git init {}/", app_name),
+            "tapm failed to initialize a git repository",
+        )?;
+        utils::make_default_folder(&format!("{}/{}_latest", app_name, app_name))?;
+        if !side_module {
+            utils::make_default_file(&format!("{}/index.html", app_name), INDEX_HTML, &app_name)?;
         }
 
         utils::make_default_file(
@@ -52,11 +46,9 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
             },
             &app_name,
         )?;
-        utils::make_default_file(
-            &format!("{}/.gitignore", app_name),
-            GIT_IGNORE,
-            &app_name,
-        )?;
+        utils::make_default_file(&format!("{}/.gitignore", app_name), GIT_IGNORE, &app_name)?;
+
+        info!("{}", &format!("Created new WASM app at {}/", app_name));
 
         Ok(())
     }

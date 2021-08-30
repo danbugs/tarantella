@@ -1,6 +1,12 @@
 use failure::{Context, ResultExt};
 use serde_derive::{Deserialize, Serialize};
-use std::{fs::{self, File}, io::Write, path::Path, process::{Child, Command, Output}};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::Path,
+    process::{Child, Command, Output},
+    str,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct TarantellaToml {
@@ -64,6 +70,7 @@ pub fn run_command(command: &str, err_msg: &str) -> Result<Output, Context<Strin
             .output()
             .context(err_msg.to_string())?
     };
+
     Ok(output)
 }
 
@@ -106,25 +113,36 @@ pub fn make_default_file(
 }
 
 pub fn check_for_toml_field(field_name: &str) -> Result<String, Context<String>> {
-    let package = toml_to_struct("Tarantella.toml")
-        .unwrap()
-        .package;
+    let package = toml_to_struct("Tarantella.toml").unwrap().package;
 
-        let field_opt = match field_name {
-            "name" => package.name,
-            "version" => package.version,
-            "module_type" => package.module_type,
-            "build_dir" => package.build_dir,
-            "releases_repo" => package.releases_repo,
-            _ => return Err(Context::from("Invalid field requested".to_string())),
-         };
+    let field_opt = match field_name {
+        "name" => package.name,
+        "version" => package.version,
+        "module_type" => package.module_type,
+        "build_dir" => package.build_dir,
+        "releases_repo" => package.releases_repo,
+        _ => return Err(Context::from("Invalid field requested".to_string())),
+    };
 
     let field;
     if field_opt.is_none() {
-        return Err(Context::from(format!("Tarantella.toml is missing a {} field. Add `build_dir = <app_name>_latest` to your Tarantella.toml to continue", field_name)));
+        return Err(Context::from(format!(
+            "Tarantella.toml is missing a {} field.",
+            field_name
+        )));
     } else {
         field = field_opt.unwrap();
     }
 
     Ok(field)
+}
+
+pub fn find_str_between(full_str: &str, a: &str, b: &str, offset: usize) -> Result<String, Context<String>> {
+    let start_bytes = full_str
+        .find(a)
+        .unwrap_or(0);
+    let end_bytes = full_str
+        .find(b)
+        .unwrap_or(b.len());
+    Ok(full_str[(start_bytes + offset)..end_bytes].to_string())
 }
