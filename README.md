@@ -7,13 +7,13 @@ Tarantella is an **incoming** modern package manager for C/C++ WASM apps (main m
 Tarantella makes it easy to start, build, test, and distribute WASM apps and libraries by serving as a wrapper around several fantastic tools.
 
 To start your app, run `tapm new "<app_name>" [-s]` (the `-s` makes it a side module). This automatically creates a C (but easily convertible to C++) WASM app with:
-    - an empty git repo,
-    - a dependencies folder for all side modules meant to be dynamically linked,
-    - a releases folder for all your upcoming releases,
-    - a src folder with a starting `main.c` file,
-    - a `.gitignore`,
-    - a `Makefile` to ease compilation, and
-    - a `Tarantella.toml` file that contains all of your project's pertinent info.
+- an empty git repo,
+- a dependencies folder for all side modules meant to be dynamically linked,
+- a releases folder for all your upcoming releases,
+- a src folder with a starting `main.c` file,
+- a `.gitignore`,
+- a `Makefile` to ease compilation, and
+- a `Tarantella.toml` file that contains all of your project's pertinent info.
 
 To build your app, run `tapm build`. This will use the created `Makefile` to create a new release in your build directory specified in the `Tarantella.toml` and `Makefile`. 
 
