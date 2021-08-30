@@ -66,5 +66,7 @@ dependencies/
 pub const README: &str = "# Welcome to <app_name>! 💃🕷
 This is an app made with the [Tarantella Package Manager](https://github.com/danbugs/tarantella)
 
-> Note: This repository should always be in the same directory level as your source code's repository.
+- Notes: 
+  - This repository should always be in the same directory level as your source code's repository.
+  - This repository should not be renamed.
 ";

@@ -1,28 +1,34 @@
 use failure::{Context, ResultExt};
 use std::{path::PathBuf, str};
 use zip_extensions::*;
+use online::check;
 
 use crate::{constants::README, utils};
 
 pub async fn publish() -> Result<(), Context<String>> {
     let releases_repo = utils::check_for_toml_field("releases_repo")?;
+    let app_name = utils::check_for_toml_field("name")?;
+    let build_dir = utils::check_for_toml_field("build_dir")?;
+    if !check(None).await.is_ok() {
+        return Err(Context::from("You need an internet connectivity to run tapm publish".to_string()))
+    }
+    utils::check_for_path(
+        &format!("{}/{}.wasm", build_dir, app_name),
+        &format!("{}/{}.wasm not found", build_dir, app_name),
+    )?;
+
     if releases_repo.is_empty() {
         info!("Initiating first release...");
-        first_release(&utils::check_for_toml_field("name")?).await?
+        first_release(&app_name).await?
     } else {
         info!("Creating a new release...");
-        update_release(&releases_repo).await?
+        update_release().await?
     }
 
     Ok(())
 }
 
 fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
-    let build_dir = utils::check_for_toml_field("build_dir")?;
-    utils::check_for_path(
-        &format!("{}/{}.wasm", build_dir, app_name),
-        &format!("{}/{}.wasm not found", build_dir, app_name),
-    )?;
     let output = utils::run_command(
         &format!("cd .. && gh repo create {}_releases --public -y", app_name),
         "tapm publish failed at creating a public repo for releases",
@@ -69,6 +75,8 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
         "{}",
         format!("Created remote public git repo at {}", return_url)
     );
+    warn!("{}", format!("If you CTRL+C this process now, you must also manually delete the git repo at {}", return_url));
+
 
     Ok(return_url)
 }
@@ -78,6 +86,8 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
     let mut toml = utils::toml_to_struct("Tarantella.toml")?;
     toml.package.releases_repo = Some(url.to_string());
     utils::update_toml("Tarantella.toml", &toml)?;
+    
+    warn!("If you CTRL+C this process now, you must also manually set the release_repo field from Tarantella.toml to \"\".");
 
     let version = utils::check_for_toml_field("version")?;
     let archive_file: PathBuf = PathBuf::from(format!("releases/{}-{}.zip", app_name, version));
@@ -86,6 +96,7 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
     zip_create_from_directory(&archive_file, &source_dir)
         .context("tapm publish failed at creating a zip file for the release".to_string())?;
 
+    info!("{}", format!("Created new release at releases/{}-{}.zip", app_name, version));
     let path_fragment = if extra_command.is_empty() {
         "".to_string()
     } else {
@@ -94,16 +105,12 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
 
     let mut child = utils::spawn_command(
         &format!(
-            "{}gh release create {} {}/releases/{}-{}.zip",
-            extra_command,
-            version,
-            path_fragment,
-            app_name,
-            version
+            "{}gh release create {} {}releases/{}-{}.zip",
+            extra_command, version, path_fragment, app_name, version
         ),
         "tapm publish failed to add a README to the releases git repo",
     )?;
-
+    
     child.wait().unwrap();
 
     Ok(())
@@ -134,8 +141,9 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
     }
 }
 
-async fn update_release(_url: &str) -> Result<(), Context<String>> {
+async fn update_release() -> Result<(), Context<String>> {
     let app_name = utils::check_for_toml_field("name").unwrap();
+    
     let external_repo = get_repo_url().await.unwrap();
     if external_repo.is_empty() {
         utils::check_for_path(
@@ -143,10 +151,13 @@ async fn update_release(_url: &str) -> Result<(), Context<String>> {
             &format!("../{}_releases folder is missing", app_name),
         )?;
     }
+    // ^^^ bad naming here but I'm pretty much just checking to see if the project is using another repo for releases or not
 
     let releases_repo = utils::check_for_toml_field("releases_repo").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
     let repo_code = &releases_repo
         [(releases_repo.find("https://github.com/").unwrap_or(0) + "https://github.com/".len())..];
+    // ^^^ might want to improve this in the future to use utils::find_str_between
+
     let raw_output = utils::run_command(
         &format!("gh release view --repo {}", repo_code),
         "tapm publish failed to get information about the previous release",
@@ -156,19 +167,22 @@ async fn update_release(_url: &str) -> Result<(), Context<String>> {
         .unwrap()
         .trim()
         .to_string();
-    let version = utils::check_for_toml_field("version").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
+    let current_version = utils::check_for_toml_field("version").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
 
-    if version.eq(&published_version) {
+    if current_version.eq(&published_version) {
         return Err(Context::from("Tarantella.toml's version is the same as your latest published version —— update it before publishing a new release.".to_string()));
     } else {
-        create_release(&app_name, &releases_repo, &if external_repo.is_empty() {
-            format!("cd ../{}_releases && ", app_name).to_string()
-        } else {
-            "".to_string()
-        })?;
+        create_release(
+            &app_name,
+            &releases_repo,
+            &if external_repo.is_empty() {
+                format!("cd ../{}_releases && ", app_name).to_string()
+            } else {
+                "".to_string()
+            },
+        )?;
     }
 
-    
     Ok(())
 }
 
@@ -184,13 +198,11 @@ async fn get_repo_url() -> Result<String, Context<String>> {
 
     if str::from_utf8(&origin.stderr).unwrap().is_empty() {
         // ^^^ origin exists
-        if str::from_utf8(&origin.stdout)
-            .unwrap()
-            .contains("github.com")
-        {
+        let stdout = str::from_utf8(&origin.stdout).unwrap();
+        if stdout.contains("github.com") {
             // ^^^ git repo is hosted on GitHub
             let url = utils::find_str_between(
-                str::from_utf8(&origin.stdout).unwrap(),
+                stdout,
                 "https://github.com/",
                 ".git",
                 0,

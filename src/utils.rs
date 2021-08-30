@@ -11,6 +11,7 @@ use std::{
 #[derive(Serialize, Deserialize)]
 pub struct TarantellaToml {
     pub package: Package,
+    pub dependencies: Option<Dependencies>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -20,6 +21,11 @@ pub struct Package {
     pub module_type: Option<String>,
     pub build_dir: Option<String>,
     pub releases_repo: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Dependencies {
+
 }
 
 pub fn toml_to_struct(toml_file_name: &str) -> Result<TarantellaToml, Context<String>> {
@@ -137,12 +143,14 @@ pub fn check_for_toml_field(field_name: &str) -> Result<String, Context<String>>
     Ok(field)
 }
 
-pub fn find_str_between(full_str: &str, a: &str, b: &str, offset: usize) -> Result<String, Context<String>> {
-    let start_bytes = full_str
-        .find(a)
-        .unwrap_or(0);
-    let end_bytes = full_str
-        .find(b)
-        .unwrap_or(b.len());
+pub fn find_str_between(
+    full_str: &str,
+    a: &str,
+    b: &str,
+    offset: usize,
+) -> Result<String, Context<String>> {
+    let start_bytes = full_str.find(a).unwrap_or(0);
+    let end_bytes = full_str.find(b).unwrap_or(b.len());
+
     Ok(full_str[(start_bytes + offset)..end_bytes].to_string())
 }

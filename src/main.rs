@@ -18,7 +18,7 @@ use tapm::{Tapm, TapmSubcommands};
 #[tokio::main]
 async fn main() -> Result<(), ExitFailure> {
     let opt = Tapm::from_args();
-    let env = Env::new().default_filter_or("tapm=info");
+    let env = Env::new().default_filter_or("tapm=info,warn");
     Builder::from_env(env)
         .default_format_module_path(false)
         .default_format_timestamp(false)
