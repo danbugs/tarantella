@@ -6,22 +6,22 @@ Tarantella is an **incoming** modern package manager for C/C++ WASM apps (main m
 
 Tarantella makes it easy to start, build, test, and distribute WASM apps and libraries by serving as a wrapper around several fantastic tools.
 
-To start your app, run `tapm new "<app_name>" [-s]` (the `-s` makes it a side module). This automatically creates a C (but easily convertable to C++) WASM app with:
+To start your app, run `tapm new "<app_name>" [-s]` (the `-s` makes it a side module). This automatically creates a C (but easily convertible to C++) WASM app with:
     - an empty git repo,
     - a dependencies folder for all side modules meant to be dynamically linked,
     - a releases folder for all your upcoming releases,
     - a src folder with a starting `main.c` file,
     - a `.gitignore`,
     - a `Makefile` to ease compilation, and
-    - a `Tarantella.toml` file that contains all your project's pertinent info.
+    - a `Tarantella.toml` file that contains all of your project's pertinent info.
 
 To build your app, run `tapm build`. This will use the created `Makefile` to create a new release in your build directory specified in the `Tarantella.toml` and `Makefile`. 
 
 WASM main modules initialize with an `index.html` file. To test your main module on the browser, run `tapm run [-p <some_port_>]` — this will start a [`basic-http-server`](https://crates.io/crates/basic-http-server).
 
 For publishing apps, Tarantella depends on GitHub. There are two options:
-- If your repository already has a public remote origin hosted on GitHub: Tarantella will simply publish your app there.
-- If your repository does not have a remote origin, or has a private remote origin, or has a remote origin not hosted on GitHub: Tarantella will create a GitHub repository called `<app_name>_releases`. 
+- If your repository already has a public remote origin hosted on GitHub: Tarantella will simply publish your releases there.
+- If your repository does not have a remote origin, or has a private remote origin, or has a remote origin not hosted on GitHub: Tarantella will create a GitHub repository called `<app_name>_releases` and publish your releases there. 
 
 To publish your app, run `tapm login` to login to GitHub, and `tapm publish` to create a new release. If you do not have a GitHub account, run: `tapm register` for more info on how to register for GitHub.
 
@@ -42,10 +42,10 @@ cargo install tarantella
 
 ```
 tapm 0.5.0
-tapm is a package manager for C/C++ WASM apps.
+tapm is a modern package manager for C/C++ WASM apps.
 
 USAGE:
-    tapm.exe <SUBCOMMAND>
+    tapm <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
