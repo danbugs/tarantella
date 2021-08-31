@@ -5,7 +5,8 @@ module_type = \"main_module\" # main_module || side_module
 build_dir = \"build\" # when modifying this field, change BUILD_DIR in the Makefile too
 releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 
-[dependencies]";
+[dependencies] # dependencies should not be added manually, use the tapm add command instead
+";
 
 pub const TARANTELLA_SM_TOML : &str = "[package]
 name = \"<app_name>\"
@@ -14,9 +15,10 @@ module_type = \"side_module\" # main_module || side_module
 build_dir = \"build\" # when modifying this field, change BUILD_DIR in the Makefile too
 releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 
-[dependencies]";
+[dependencies] # dependencies should not be added manually, use the tapm add command instead
+";
 
-pub const MAIN_C : &str = "#include <stdio.h>
+pub const MAIN_C_MM : &str = "#include <stdio.h>
 #include <emscripten.h>
 
 EMSCRIPTEN_KEEPALIVE
@@ -28,23 +30,34 @@ int main() {
     print_hello();
 }";
 
+pub const MAIN_C_SM : &str = "#include <stdio.h>
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE
+void print_hello() {
+    printf(\"Hello!\\n\");
+}";
+
+
 pub const MAKEFILE_MM : &str = "P=<app_name>
 OBJECTS=src/main.c
 EMCC=emcc
 EMCC_CFLAGS=-s MAIN_MODULE=1
 BUILDDIR=build
+DEPENDENCIES=
 
 $(P): $(OBJECTS)
-\t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).js";
+\t$(EMCC) $(EMCC_CFLAGS) $(DEPENDENCIES) src/main.c -o $(BUILDDIR)/$(P).js";
 
 pub const MAKEFILE_SM: &str = "P=<app_name>
 OBJECTS=src/main.c
 EMCC=emcc
 EMCC_CFLAGS=-s SIDE_MODULE=2 -c
 BUILDDIR=build
+DEPENDENCIES=
 
 $(P): $(OBJECTS)
-\t$(EMCC) $(EMCC_CFLAGS) src/main.c -o $(BUILDDIR)/$(P).o";
+\t$(EMCC) $(EMCC_CFLAGS) $(DEPENDENCIES) src/main.c -o $(BUILDDIR)/$(P).o";
 
 pub const INDEX_HTML: &str = "<html lang=\"en\">
   <head>
@@ -60,7 +73,7 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
 
 pub const GIT_IGNORE: &str = "build/
 releases/
-dependencies/
+# dependencies/ folder is not ignored because tapm doesn't have a npm init equivalent command yet
 ";
 
 pub const README: &str = "# Welcome to <app_name>! 💃🕷

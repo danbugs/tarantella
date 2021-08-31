@@ -1,6 +1,6 @@
 [package]
 name = "tarantella"
-version = "0.5.8"
+version = "0.6.0"
 edition = "2018"
 authors = ["Dan Chiarlone"]
 description = "Tarantella is an incoming package manager for WASM modules meant to be dynamically linked!"
@@ -24,6 +24,8 @@ zip-extensions = "0.6"
 log = "0.4.8"
 env_logger = "0.6.2"
 online = "3.0.1"
+fs_extra = "1.2.0"
+regex = "1.5"
 
 [[bin]]
 name = "tapm"

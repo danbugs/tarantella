@@ -1,5 +1,5 @@
 use crate::constants::{
-    GIT_IGNORE, INDEX_HTML, MAIN_C, MAKEFILE_MM, MAKEFILE_SM, TARANTELLA_MM_TOML,
+    GIT_IGNORE, INDEX_HTML, MAIN_C_MM, MAIN_C_SM, MAKEFILE_MM, MAKEFILE_SM, TARANTELLA_MM_TOML,
     TARANTELLA_SM_TOML,
 };
 use crate::utils;
@@ -24,7 +24,10 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
         )?;
         utils::make_default_folder(&format!("{}/build", app_name))?;
         if !side_module {
+            utils::make_default_file(&format!("{}/src/main.c", app_name), MAIN_C_MM, &app_name)?;
             utils::make_default_file(&format!("{}/index.html", app_name), INDEX_HTML, &app_name)?;
+        } else {
+            utils::make_default_file(&format!("{}/src/main.c", app_name), MAIN_C_SM, &app_name)?;
         }
 
         utils::make_default_file(
@@ -36,7 +39,6 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
             },
             &app_name,
         )?;
-        utils::make_default_file(&format!("{}/src/main.c", app_name), MAIN_C, &app_name)?;
         utils::make_default_file(
             &format!("{}/Makefile", app_name),
             if side_module {
