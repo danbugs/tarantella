@@ -2,6 +2,7 @@ use failure::{Context, ResultExt};
 use online::check;
 use std::{path::PathBuf, str};
 use zip_extensions::*;
+use std::fs;
 
 use crate::{constants::README, utils};
 
@@ -15,10 +16,16 @@ pub async fn publish() -> Result<(), Context<String>> {
         ));
     }
 
-    if PathBuf::from(&build_dir).read_dir().unwrap().next().is_none() {
-        return Err(Context::from(
-            format!("There's nothing to build in {}/", build_dir),
-        ));
+    if PathBuf::from(&build_dir)
+        .read_dir()
+        .unwrap()
+        .next()
+        .is_none()
+    {
+        return Err(Context::from(format!(
+            "There's nothing to build in {}/",
+            build_dir
+        )));
     }
 
     if releases_repo.is_empty() {
@@ -41,6 +48,14 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
         "{}",
         format!(
             "Creating local git repo for releases at ../{}_releases/...",
+            app_name
+        )
+    );
+
+    warn!(
+        "{}",
+        format!(
+            "If you CTRL+C this process now, you must also manually delete the local git repo for releases at ../{}_releases/",
             app_name
         )
     );
@@ -92,19 +107,19 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
 
 fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
     info!("Specify release details below:");
-    let mut toml = utils::toml_to_struct("Tarantella.toml")?;
-    toml.package.releases_repo = Some(url.to_string());
-    utils::update_toml("Tarantella.toml", &toml)?;
+    utils::insert_string_in_file("Tarantella.toml", "releases_repo = \"", url, "tapm publish failed to add url to releases_repo field")?;
 
     warn!("If you CTRL+C this process now, you must also manually set the release_repo field from Tarantella.toml to \"\".");
 
+    fs::copy("Tarantella.toml", "build/Tarantella.toml").context("tapm build failed to copy Tarantella.toml to build directory".to_string())?;
     let version = utils::check_for_toml_field("version")?;
     let archive_file: PathBuf = PathBuf::from(format!("releases/{}-{}.zip", app_name, version));
     let source_dir: PathBuf =
         PathBuf::from(format!("{}", utils::check_for_toml_field("build_dir")?));
     zip_create_from_directory(&archive_file, &source_dir)
         .context("tapm publish failed at creating a zip file for the release".to_string())?;
-
+    fs::remove_file("build/Tarantella.toml").context("tapm build failed to copy Tarantella.toml to build directory".to_string())?;
+    
     info!(
         "{}",
         format!(
@@ -132,28 +147,16 @@ fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), 
 }
 
 async fn first_release(app_name: &str) -> Result<(), Context<String>> {
-    utils::check_for_command("gh", "tapm depends on the GitHub CLI. To install it, see: https://github.com/cli/cli#installation")?;
-    let auth_status = utils::run_command(
-        "gh auth status",
-        "tapm publish failed on verifying auth status",
-    )?;
-    if str::from_utf8(&auth_status.stderr).unwrap().contains("✓") {
-        // ^^^ hacky way to check if user is logged in, could be improved
+    utils::check_ghlogin()?;
+    let mut url = get_repo_url().await.unwrap();
 
-        let mut url = get_repo_url().await.unwrap();
-
-        if !url.is_empty() {
-            create_release(app_name, &url, "")?;
-        } else {
-            url = create_public_repo(&app_name)?;
-            create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
-        }
-        return Ok(());
+    if !url.is_empty() {
+        create_release(app_name, &url, "")?;
     } else {
-        return Err(Context::from(
-            "You must be logged in to use tapm publish — run: tapm login".to_string(),
-        ));
+        url = create_public_repo(&app_name)?;
+        create_release(app_name, &url, &format!("cd ../{}_releases && ", app_name))?;
     }
+    return Ok(());
 }
 
 async fn update_release() -> Result<(), Context<String>> {
@@ -173,15 +176,7 @@ async fn update_release() -> Result<(), Context<String>> {
         [(releases_repo.find("https://github.com/").unwrap_or(0) + "https://github.com/".len())..];
     // ^^^ might want to improve this in the future to use utils::find_str_between
 
-    let raw_output = utils::run_command(
-        &format!("gh release view --repo {}", repo_code),
-        "tapm publish failed to get information about the previous release",
-    )?;
-    let output = str::from_utf8(&raw_output.stdout).unwrap();
-    let published_version = utils::find_str_between(output, "tag:", "draft:", "tag:".len())
-        .unwrap()
-        .trim()
-        .to_string();
+    let published_version = utils::get_latest_version(repo_code)?;
     let current_version = utils::check_for_toml_field("version").unwrap(); // releases_repo here is empty if tapm is using the <app_name>_releases repo
 
     if current_version.eq(&published_version) {

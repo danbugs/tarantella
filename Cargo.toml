@@ -24,6 +24,7 @@ zip-extensions = "0.6"
 log = "0.4.8"
 env_logger = "0.6.2"
 online = "3.0.1"
+fs_extra = "1.2.0"
 
 [[bin]]
 name = "tapm"

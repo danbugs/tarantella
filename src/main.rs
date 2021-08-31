@@ -12,6 +12,7 @@ pub mod utils;
 pub mod login;
 pub mod register;
 pub mod publish;
+pub mod add;
 
 use tapm::{Tapm, TapmSubcommands};
 
@@ -34,6 +35,10 @@ async fn main() -> Result<(), ExitFailure> {
         TapmSubcommands::Login {} => login::login()?,
         TapmSubcommands::Register {} => register::register()?,
         TapmSubcommands::Publish {} => publish::publish().await?,
+        TapmSubcommands::Add {
+            owner_and_depname,
+            version
+        } => add::add(owner_and_depname, version).await?,
     };
     Ok(())
 }
