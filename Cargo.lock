@@ -1330,6 +1330,7 @@ dependencies = [
  "fs_extra",
  "log",
  "online",
+ "regex",
  "reqwest",
  "serde",
  "serde_derive",

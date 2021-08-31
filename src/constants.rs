@@ -1,5 +1,4 @@
-pub const TARANTELLA_MM_TOML : &str = "# WARNING: spacing is important in Tarantella.toml — keep all your fields w/ spaces around the equal-sign
-[package]
+pub const TARANTELLA_MM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\" # format: major.minor.patch
 module_type = \"main_module\" # main_module || side_module
@@ -9,8 +8,7 @@ releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 [dependencies] # dependencies should not be added manually, use the tapm add command instead
 ";
 
-pub const TARANTELLA_SM_TOML : &str = "# WARNING: spacing is important in Tarantella.toml — keep all your fields w/ spaces around the equal-sign
-[package]
+pub const TARANTELLA_SM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\"  # format: major.minor.patch
 module_type = \"side_module\" # main_module || side_module
@@ -75,7 +73,7 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
 
 pub const GIT_IGNORE: &str = "build/
 releases/
-dependencies/
+# dependencies/ folder is not ignored because tapm doesn't have a npm init equivalent command yet
 ";
 
 pub const README: &str = "# Welcome to <app_name>! 💃🕷

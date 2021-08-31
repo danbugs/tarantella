@@ -55,7 +55,7 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
     warn!(
         "{}",
         format!(
-            "If you CTRL+C this process now, you must also manually delete the local git repo for releases at ../{}_releases/",
+            "If this process crashes or you cancel after this, you must also manually delete the local git repo for releases at ../{}_releases/",
             app_name
         )
     );
@@ -97,7 +97,7 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
     warn!(
         "{}",
         format!(
-            "If you CTRL+C this process now, you must also manually delete the git repo at {}",
+            "If this process crashes or you cancel it now, you must also manually delete the git repo at {}",
             return_url
         )
     );
@@ -107,12 +107,13 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
 
 fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
     info!("Specify release details below:");
-    utils::insert_string_in_file("Tarantella.toml", "releases_repo = \"", url, "tapm publish failed to add url to releases_repo field")?;
+    utils::insert_string_in_file("Tarantella.toml", r#"releases_repo\s*=\s*""#, url, "tapm publish failed to add url to releases_repo field")?;
 
-    warn!("If you CTRL+C this process now, you must also manually set the release_repo field from Tarantella.toml to \"\".");
+    warn!("If this process crashes or you cancel it now and this is your first release, you might want to manually set the release_repo field from Tarantella.toml to \"\".");
 
     fs::copy("Tarantella.toml", "build/Tarantella.toml").context("tapm build failed to copy Tarantella.toml to build directory".to_string())?;
     let version = utils::check_for_toml_field("version")?;
+    utils::check_for_path("releases/", "tapm publish failed to find releases/ folder")?;
     let archive_file: PathBuf = PathBuf::from(format!("releases/{}-{}.zip", app_name, version));
     let source_dir: PathBuf =
         PathBuf::from(format!("{}", utils::check_for_toml_field("build_dir")?));

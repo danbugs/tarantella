@@ -62,7 +62,7 @@ pub async fn add(
     fs::create_dir_all("tmp/").context(
         "tapm add failed at creating tmp folder to store dependency for verification".to_string(),
     )?; // create tmp folder
-    warn!("After this point, if the program crashes, you will have to manually delete the tmp/ folder to avoid any adverse side-effects from the crash");
+    warn!("If this process crashes or you cancel it now, you will have to manually delete the tmp/ folder to avoid any adverse side-effects from the crash/cancel");
 
     let mut child = utils::spawn_command(
         &format!(
@@ -101,17 +101,19 @@ pub async fn add(
     dir::move_dir("tmp/", "dependencies/", &options).context(format!(
         "tapm add failed to move tmp/ contents to dependencies/{}",
         dep_name
-    ))?; 
+    ))?;
 
-    fs::rename("dependencies/tmp", &format!("dependencies/{}", dep_name)).context(format!("tapm add failed to rename dependencies/tmp/ to dependencies/{}", dep_name))?;
+    fs::rename("dependencies/tmp", &format!("dependencies/{}", dep_name)).context(format!(
+        "tapm add failed to rename dependencies/tmp/ to dependencies/{}",
+        dep_name
+    ))?;
 
     warn!("Deleted tmp/ folder");
     info!(
         "Added dependency at: {}",
         &format!("dependencies/{}", dep_name)
     );
-    warn!("{}", format!(" After this point, if the program crashes, you will have to manually delete the dependencies/{} folder", dep_name));
-
+    warn!("{}", format!("If this process crashes or you cancel it now, you will have to manually delete the dependencies/{} folder", dep_name));
 
     let mut toml = OpenOptions::new()
         .write(true)
@@ -119,9 +121,16 @@ pub async fn add(
         .open("Tarantella.toml")
         .context("tapm add failed to open Tarantella.toml to add dependency".to_string())?;
 
-    if let Err(_) = writeln!(
+    let toml_contents = fs::read_to_string("Tarantella.toml")
+        .context("tapm failed to read Tarantella.toml".to_string())?;
+    if utils::check_for_string(&toml_contents, &dep_name, "").is_ok() {
+        info!("here");
+        utils::remove_string_in_file("Tarantella.toml", &format!(r#"{}\s*=\s*".+"#, dep_name), "tapm add couldn't remove previous reference to this dependency from Tarantella.toml")?;
+    }
+
+    if let Err(_) = write!(
         toml,
-        "{} = \"{} {}\"",
+        "\n{} = \"{} {}\"",
         dep_name, owner_and_depname, desired_version
     ) {
         return Err(Context::from(
@@ -130,16 +139,23 @@ pub async fn add(
     }
     // ^^^ add dependency to Tarantella.toml
 
-    // @TODO: if this is a dependency up/downgrade, we'll need remove the previous field from the Tarantella.toml
-
     info!("Added dependency to Tarantella.toml file");
-    warn!("After this point, if the program crashes, you will have to manually delete the new dependency's field from Tarantella.toml");
-
-    utils::insert_string_in_file("Makefile", "DEPENDENCIES=", &format!("dependencies/{}/{}.o ", dep_name, dep_name), "tapm add failed — Add DEPENDENCIES= variable to your Makefile.")?;
+    warn!("If this process crashes or you cancel it now, you will have to manually delete the new dependency's field from Tarantella.toml");
+    
+    let makefile_contents =
+        fs::read_to_string("Makefile").context("tapm failed to failed to open Makefile to check for dependency".to_string())?;
+    
+    if utils::check_for_string(&makefile_contents, &format!("dependencies/{}/{}.o ", dep_name, dep_name), "tapm add failed to verify if dependency was listed in Makefile").is_err() {
+        utils::insert_string_in_file(
+            "Makefile",
+            r#"DEPENDENCIES\s*="#,
+            &format!("dependencies/{}/{}.o ", dep_name, dep_name),
+            "tapm add failed — Add DEPENDENCIES= variable to your Makefile.",
+        )?;
+    }
     // ^^^ add dependency to the Makefile list of dependencies
 
-    // @TODO: if this is a dependency up/downgrade, we'll need remove the previous field from the Tarantella.toml
-
+    // if this is a update, we leave the Makefile as is <-- subject to change
     info!("Added dependency to Makefile");
 
     Ok(())
