@@ -124,7 +124,6 @@ pub async fn add(
     let toml_contents = fs::read_to_string("Tarantella.toml")
         .context("tapm failed to read Tarantella.toml".to_string())?;
     if utils::check_for_string(&toml_contents, &dep_name, "").is_ok() {
-        info!("here");
         utils::remove_string_in_file("Tarantella.toml", &format!(r#"{}\s*=\s*".+"#, dep_name), "tapm add couldn't remove previous reference to this dependency from Tarantella.toml")?;
     }
 
