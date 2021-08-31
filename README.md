@@ -71,3 +71,7 @@ For more info on subcommands, run: `tapm <subcommand> --help`.
 ## Roadmap
 
 Check out Tarantella's GitHub project board for a view of implemented subcommands [here](https://github.com/danbugs/tarantella/projects/1).
+
+## Disclaimer
+
+This package manager is new and definitely not free of bugs. However, this is a project I care about so I'll do my best to fix any issues you encounter while using `tapm`. To file a bug, see [this](https://github.com/danbugs/tarantella/issues).
