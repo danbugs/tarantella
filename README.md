@@ -33,8 +33,7 @@ For publishing apps, Tarantella depends on GitHub. There are two options:
 
 To publish your app, run `tapm login` to login to GitHub, and `tapm publish` to create a new release. If you do not have a GitHub account, run: `tapm register` for more info on how to register for GitHub.
 
-**Missing subcommands:**
-- `tapm add "<dependency_creator>/<dependency_name>[-<version>]"`: this will allow you to add dependencies to your project.
+To add dependencies to your app, run `tapm add <owner>/<dependency_name> [<version>]` and any Tarantella libraries (i.e., published with `tapm publish`) will be automatically downloaded and added to a list of dependencies that are to be dynamically linked at compilation-time in your `Makefile`.
 
 ## Why not use [WAPM](https://wapm.io/)?
 
