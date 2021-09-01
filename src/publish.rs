@@ -161,6 +161,7 @@ async fn first_release(app_name: &str) -> Result<(), Context<String>> {
 }
 
 async fn update_release() -> Result<(), Context<String>> {
+    utils::check_ghlogin()?;
     let app_name = utils::check_for_toml_field("name").unwrap();
 
     let external_repo = get_repo_url().await.unwrap();
