@@ -102,9 +102,9 @@ pub fn check_for_command(command: &str, err_msg: &str) -> Result<Output, Context
             .unwrap()
     } else {
         Command::new("sh")
-            .args(&["-c", command, "--version"])
-            .output()
-            .unwrap()
+        .args(&["-c", &format!(r#"{} --version"#, command)])
+        .output()
+        .unwrap()
     };
 
     if str::from_utf8(&output.stdout).unwrap().is_empty() {
