@@ -34,7 +34,7 @@ pub fn toml_to_struct(toml_file_name: &str) -> Result<TarantellaToml, Context<St
     Ok(contents_as_toml)
 }
 
-pub fn check_for_string<'a> (
+pub fn check_for_string<'a>(
     checked_str: &'a str,
     checking_str: &str,
     err_msg: &str,
@@ -59,7 +59,9 @@ pub fn insert_string_in_file(
     let file_contents =
         fs::read_to_string(file_name).context(format!("tapm failed to read {}", file_name))?;
 
-    let marker_index = check_for_string(&file_contents, marker_string, err_msg).unwrap().end();
+    let marker_index = check_for_string(&file_contents, marker_string, err_msg)
+        .unwrap()
+        .end();
     let mut altered_file = file_contents[..marker_index].to_string();
     let postmarker_file = &file_contents[marker_index..];
 
@@ -88,7 +90,8 @@ pub fn remove_string_in_file(
     let postmarker_file = &file_contents[marker_index.end()..];
 
     altered_file.push_str(postmarker_file);
-    file.set_len(0).context("tapm failed to erase old file's contents".to_string())?;
+    file.set_len(0)
+        .context("tapm failed to erase old file's contents".to_string())?;
     file.write_all(altered_file.as_bytes())
         .context(format!("tapm failed to write to {}", file_name))?;
     Ok(())
@@ -102,9 +105,9 @@ pub fn check_for_command(command: &str, err_msg: &str) -> Result<Output, Context
             .unwrap()
     } else {
         Command::new("sh")
-        .args(&["-c", &format!(r#"{} --version"#, command)])
-        .output()
-        .unwrap()
+            .args(&["-c", &format!(r#"{} --version"#, command)])
+            .output()
+            .unwrap()
     };
 
     if str::from_utf8(&output.stdout).unwrap().is_empty() {
@@ -113,8 +116,6 @@ pub fn check_for_command(command: &str, err_msg: &str) -> Result<Output, Context
 
     Ok(output)
 }
-
-
 
 pub fn check_for_path(path: &str, err_msg: &str) -> Result<(), Context<String>> {
     if !Path::new(path).exists() {
@@ -132,7 +133,7 @@ pub fn run_command(command: &str, err_msg: &str) -> Result<Output, Context<Strin
             .context(err_msg.to_string())?
     } else {
         Command::new("sh")
-            .args(&["-c", command])
+            .args(&["-c", &format!("'{}'", command)])
             .output()
             .context(err_msg.to_string())?
     };

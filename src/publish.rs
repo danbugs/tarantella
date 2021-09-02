@@ -107,7 +107,9 @@ fn create_public_repo(app_name: &str) -> Result<String, Context<String>> {
 
 fn create_release(app_name: &str, url: &str, extra_command: &str) -> Result<(), Context<String>> {
     info!("Specify release details below:");
-    utils::insert_string_in_file("Tarantella.toml", r#"releases_repo\s*=\s*""#, url, "tapm publish failed to add url to releases_repo field")?;
+    if utils::check_for_toml_field("releases_repo").unwrap().is_empty() {
+        utils::insert_string_in_file("Tarantella.toml", r#"releases_repo\s*=\s*""#, url, "tapm publish failed to add url to releases_repo field")?;
+    }
 
     warn!("If this process crashes or you cancel it now and this is your first release, you might want to manually set the release_repo field from Tarantella.toml to \"\".");
 
