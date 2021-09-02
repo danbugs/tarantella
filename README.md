@@ -48,7 +48,7 @@ cargo install tarantella
 ## Usage
 
 ```
-tapm 0.6.6
+tapm 0.6.8
 tapm is a modern package manager for C/C++ WASM apps.
 
 USAGE:
