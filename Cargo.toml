@@ -1,9 +1,9 @@
 [package]
 name = "tarantella"
-version = "0.6.8"
+version = "0.6.9"
 edition = "2018"
 authors = ["Dan Chiarlone"]
-description = "Tarantella is a modern package manager for WASM modules meant to be dynamically linked!"
+description = "Tarantella is a modern package manager for C/C++ WASM apps (main modules) and WASM libraries (side modules) meant to be dynamically linked!"
 readme = "README.md"
 repository = "https://github.com/danbugs/tarantella"
 license = "AGPL-3.0"
@@ -29,4 +29,4 @@ regex = "1.5"
 
 [[bin]]
 name = "tapm"
-path ="src/main.rs"
+path = "src/main.rs"

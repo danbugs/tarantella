@@ -1,6 +1,6 @@
 # Tarantella Package Manager 💃🕷
 
-Tarantella is an **incoming** modern package manager for C/C++ WASM apps (main modules) and WASM libraries (side modules) meant to be dynamically linked!
+Tarantella is a modern package manager for C/C++ WASM apps (main modules) and WASM libraries (side modules) meant to be dynamically linked!
 
 ## Requirements
 
