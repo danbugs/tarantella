@@ -1,7 +1,5 @@
-use std::process::Command;
-
 use crate::utils;
-use failure::{Context, ResultExt};
+use failure::Context;
 
 pub fn run(port: i32) -> Result<(), Context<String>> {
     let module_type = utils::check_for_toml_field("module_type")?;

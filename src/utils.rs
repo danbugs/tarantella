@@ -134,7 +134,7 @@ pub fn run_command(command: &str, err_msg: &str) -> Result<Output, Context<Strin
             .context(err_msg.to_string())?
     } else {
         Command::new("sh")
-            .args(&["-c", &format!("'{}'", command)])
+            .args(&["-c", &format!(r#"{}"#, command)])
             .output()
             .context(err_msg.to_string())?
     };
@@ -150,7 +150,7 @@ pub fn spawn_command(command: &str, err_msg: &str) -> Result<Child, Context<Stri
             .context(err_msg.to_string())?
     } else {
         Command::new("sh")
-            .args(&["-c", command])
+            .args(&["-c", &format!(r#"{}"#, command)])
             .spawn()
             .context(err_msg.to_string())?
     };
