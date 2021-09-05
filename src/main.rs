@@ -30,7 +30,8 @@ async fn main() -> Result<(), ExitFailure> {
         TapmSubcommands::New {
             app_name,
             side_module,
-        } => new::new(app_name, side_module)?,
+            no_git,
+        } => new::new(app_name, side_module, no_git)?,
         TapmSubcommands::Run { port } => match run::run(port) {
             Ok(_) => (),
             Err(err_msg) => error!("{}", err_msg),

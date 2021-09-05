@@ -6,7 +6,7 @@ use crate::utils;
 use failure::Context;
 use std::path::Path;
 
-pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
+pub fn new(app_name: String, side_module: bool, no_git: bool) -> Result<(), Context<String>> {
     utils::check_for_command(
         "git",
         "tapm depends on git. To install it, see: https://git-scm.com/downloads",
@@ -18,10 +18,12 @@ pub fn new(app_name: String, side_module: bool) -> Result<(), Context<String>> {
         utils::make_default_folder(&format!("{}/src", app_name))?;
         utils::make_default_folder(&format!("{}/dependencies", app_name))?;
         utils::make_default_folder(&format!("{}/releases", app_name))?;
-        utils::run_command(
-            &format!("git init {}/", app_name),
-            "tapm failed to initialize a git repository",
-        )?;
+        if !no_git {
+            utils::run_command(
+                &format!("git init {}/", app_name),
+                "tapm failed to initialize a git repository",
+            )?;
+        }
         utils::make_default_folder(&format!("{}/build", app_name))?;
         if !side_module {
             utils::make_default_file(&format!("{}/src/main.c", app_name), MAIN_C_MM, &app_name)?;
