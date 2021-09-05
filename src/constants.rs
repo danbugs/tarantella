@@ -82,7 +82,8 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
   </body>
 </html>";
 
-pub const INDEX_JS: &str = "require('./build/<app_name>');";
+pub const INDEX_JS: &str = "// if you rename this file, don't forget to change the \"server\" field in Tarantella.toml
+require('./build/<app_name>');";
 
 pub const GIT_IGNORE: &str = "build/
 releases/

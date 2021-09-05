@@ -1322,7 +1322,7 @@ dependencies = [
 
 [[package]]
 name = "tarantella"
-version = "0.7.0"
+version = "0.7.2"
 dependencies = [
  "env_logger",
  "exitfailure",
