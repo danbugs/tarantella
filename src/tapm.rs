@@ -20,6 +20,12 @@ pub enum TapmSubcommands {
         /// Make your new wasm app a side module
         #[structopt(short, long)]
         side_module: bool,
+        /// Start project without git
+        #[structopt(long)]
+        no_git: bool,
+        /// Start a server-side project
+        #[structopt(long)]
+        server: bool,
     },
 
     /// Start an HTTP server to test your main module (e.g., tapm run [-p 8000])

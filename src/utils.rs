@@ -22,6 +22,7 @@ pub struct Package {
     pub module_type: Option<String>,
     pub build_dir: Option<String>,
     pub releases_repo: Option<String>,
+    pub server: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -133,7 +134,7 @@ pub fn run_command(command: &str, err_msg: &str) -> Result<Output, Context<Strin
             .context(err_msg.to_string())?
     } else {
         Command::new("sh")
-            .args(&["-c", &format!("'{}'", command)])
+            .args(&["-c", &format!(r#"{}"#, command)])
             .output()
             .context(err_msg.to_string())?
     };
@@ -149,7 +150,7 @@ pub fn spawn_command(command: &str, err_msg: &str) -> Result<Child, Context<Stri
             .context(err_msg.to_string())?
     } else {
         Command::new("sh")
-            .args(&["-c", command])
+            .args(&["-c", &format!(r#"{}"#, command)])
             .spawn()
             .context(err_msg.to_string())?
     };
@@ -188,6 +189,7 @@ pub fn check_for_toml_field(field_name: &str) -> Result<String, Context<String>>
         "module_type" => package.module_type,
         "build_dir" => package.build_dir,
         "releases_repo" => package.releases_repo,
+        "server" => package.server,
         _ => return Err(Context::from("Invalid field requested".to_string())),
     };
 

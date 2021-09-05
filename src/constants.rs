@@ -8,6 +8,17 @@ releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
 [dependencies] # dependencies should not be added manually, use the tapm add command instead
 ";
 
+pub const TARANTELLA_MM_SERVER_TOML : &str = "[package]
+name = \"<app_name>\"
+version = \"0.1.0\" # format: major.minor.patch
+module_type = \"main_module\" # main_module || side_module
+build_dir = \"build\" # when modifying this field, change BUILD_DIR in the Makefile too
+releases_repo = \"\" # format: https://github.com/<owner>/<repo_name>
+server = \"index.js\" # name of startup file
+
+[dependencies] # dependencies should not be added manually, use the tapm add command instead
+";
+
 pub const TARANTELLA_SM_TOML : &str = "[package]
 name = \"<app_name>\"
 version = \"0.1.0\"  # format: major.minor.patch
@@ -70,6 +81,9 @@ pub const INDEX_HTML: &str = "<html lang=\"en\">
     <script async type=\"text/javascript\" src=\"build/<app_name>.js\"></script>
   </body>
 </html>";
+
+pub const INDEX_JS: &str = "// if you rename this file, don't forget to change the \"server\" field in Tarantella.toml
+require('./build/<app_name>');";
 
 pub const GIT_IGNORE: &str = "build/
 releases/
