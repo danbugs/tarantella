@@ -22,6 +22,7 @@ pub struct Package {
     pub module_type: Option<String>,
     pub build_dir: Option<String>,
     pub releases_repo: Option<String>,
+    pub server: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -188,6 +189,7 @@ pub fn check_for_toml_field(field_name: &str) -> Result<String, Context<String>>
         "module_type" => package.module_type,
         "build_dir" => package.build_dir,
         "releases_repo" => package.releases_repo,
+        "server" => package.server,
         _ => return Err(Context::from("Invalid field requested".to_string())),
     };
 

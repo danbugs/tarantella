@@ -7,6 +7,7 @@ Tarantella is a modern package manager for C/C++ WASM apps (main modules) and WA
 - [basic-http-server](https://crates.io/crates/basic-http-server).
 - [GitHub CLI](https://github.com/cli/cli#installation).
 - [Emscripten](https://emscripten.org/docs/getting_started/downloads.html).
+- [NodeJS](https://nodejs.org/download/).
 
 If you note weird behaviours with `tapm`, the version of one or more of the requirements might be outdated. I've created and used `tapm` with the following versions: ` emcc v2.0.29`, `basic-http-server v0.8.1`, and `gh v2.0.0`.
 
@@ -48,7 +49,6 @@ cargo install tarantella
 ## Usage
 
 ```
-tapm 0.6.8
 tapm is a modern package manager for C/C++ WASM apps.
 
 USAGE:

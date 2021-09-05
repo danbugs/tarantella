@@ -23,6 +23,9 @@ pub enum TapmSubcommands {
         /// Start project without git
         #[structopt(long)]
         no_git: bool,
+        /// Start a server-side project
+        #[structopt(long)]
+        server: bool,
     },
 
     /// Start an HTTP server to test your main module (e.g., tapm run [-p 8000])
