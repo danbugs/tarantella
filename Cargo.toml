@@ -1,6 +1,6 @@
 [package]
 name = "tarantella"
-version = "0.7.2"
+version = "0.7.3"
 edition = "2018"
 authors = ["Dan Chiarlone"]
 description = "Tarantella is a modern package manager for C/C++ WASM apps (main modules) and WASM libraries (side modules) meant to be dynamically linked!"
